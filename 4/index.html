@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приключения с Гласными — 3 Этапа</title>
+    <style>
+        :root {
+            --game-bg: #f4ecd8;
+            --game-panel-bg: #ffffff;
+            --game-primary: #ff7043;
+            --game-accent: #4db6ac;
+            --game-text: #37474f;
+            --game-success: #66bb6a;
+            --game-error: #ef5350;
+            --font-main: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--game-bg);
+            color: var(--game-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(#e2d5ba 10%, transparent 11%);
+            background-size: 20px 20px;
+        }
+
+        #game-wrapper {
+            width: 95%;
+            max-width: 850px;
+            height: 96vh;
+            max-height: 700px;
+            background: #fffdf6;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15), inset 0 0 40px rgba(0,0,0,0.03);
+            border: 6px solid #8d6e63;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .album-binder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 16px;
+            background: repeating-linear-gradient(90deg, #5d4037 0px, #5d4037 12px, transparent 12px, transparent 24px);
+            z-index: 5;
+        }
+
+        .btn {
+            background-color: var(--game-primary);
+            color: white;
+            border: none;
+            padding: 8px 22px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #d84315;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            font-family: var(--font-main);
+        }
+        .btn:hover { background-color: #ff8a65; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d84315; }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 15px 15px 15px;
+            text-align: center;
+        }
+        .screen.active { display: flex; }
+
+        .hero-img {
+            max-width: 160px;
+            height: auto;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            object-fit: contain;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        #start-screen h1 { font-size: 28px; color: var(--game-primary); margin-bottom: 10px; }
+        #start-screen p { font-size: 16px; margin-bottom: 20px; max-width: 580px; line-height: 1.4; }
+
+        .header {
+            width: 100%;
+            padding: 14px 15px 8px 15px;
+            background: #f7f1e1;
+            border-bottom: 3px dashed #bcaaa4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .score { font-size: 16px; font-weight: bold; color: var(--game-primary); }
+        .instruction { font-size: 16px; font-weight: bold; color: #5d4037; text-align: center; }
+
+        /* --- ЭТАП 1: Наклейки --- */
+        #game-content {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+            position: relative;
+        }
+
+        .decoration-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .picture-box {
+            position: relative;
+            font-size: 80px;
+            filter: drop-shadow(0 6px 6px rgba(0,0,0,0.15));
+            transition: transform 0.5s ease;
+        }
+        .picture-box.alive {
+            animation: bounceDance 0.8s infinite alternate;
+        }
+
+        @keyframes bounceDance {
+            0% { transform: scale(1) rotate(-3deg); }
+            100% { transform: scale(1.15) rotate(3deg); }
+        }
+
+        .word-container {
+            display: flex;
+            gap: 10px;
+            background: #ffffff;
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 3px solid #bcaaa4;
+            box-shadow: 0 4px 0 #d7ccc8;
+        }
+
+        .letter-slot {
+            width: 50px;
+            height: 55px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+        }
+        .letter-slot.filled-consonant { background: #eceff1; color: #455a64; border: 2px solid #cfd8dc; }
+        .letter-slot.empty-vowel { background: #fff8e1; border: 3px dashed #ffb74d; animation: pulseSlot 1.5s infinite; }
+        .letter-slot.filled-vowel { background: #e8f5e9; border: 3px solid #66bb6a; color: #2e7d32; }
+
+        @keyframes pulseSlot {
+            0%, 100% { border-color: #ffb74d; }
+            50% { border-color: #ff9800; }
+        }
+
+        .stickers-panel {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            max-width: 650px;
+            width: 100%;
+            background: #fff3e0;
+            padding: 12px;
+            border-radius: 15px;
+            border: 2px solid #ffe0b2;
+        }
+
+        .sticker {
+            background: linear-gradient(135deg, #ffffff 0%, #fff9c4 100%);
+            border: 3px solid #ffd54f;
+            border-radius: 12px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #d84315;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #ffb300;
+            position: relative;
+            transition: transform 0.15s, opacity 0.2s;
+        }
+        .sticker::before { content: '✨'; position: absolute; font-size: 10px; top: 2px; right: 2px; opacity: 0.7; }
+        .sticker:hover { transform: translateY(-3px) scale(1.05); }
+        .sticker.used { opacity: 0.2; pointer-events: none; box-shadow: none; }
+        .sticker.shake-error { animation: returnShake 0.5s ease-in-out; }
+
+        @keyframes returnShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px) rotate(-5deg); }
+            75% { transform: translateX(8px) rotate(5deg); }
+        }
+
+        /* --- ЭТАП 2: Тетрис --- */
+        #tetris-area {
+            flex-grow: 1;
+            width: 100%;
+            max-width: 480px;
+            margin: 10px auto;
+            background: #f1f8e9;
+            border: 4px solid #aed581;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .tetris-column {
+            flex: 1;
+            height: 100%;
+            border-right: 2px dashed #c5e1a5;
+            position: relative;
+        }
+        .tetris-column:last-child { border-right: none; }
+
+        .falling-letter {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            background: radial-gradient(circle, #ffffff 0%, #fff9c4 100%);
+            border: 3px solid #ffd54f;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #d84315;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            cursor: pointer;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .cross-mark {
+            position: absolute;
+            font-size: 35px;
+            color: #e53935;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            animation: fadeCross 0.8s forwards;
+        }
+
+        @keyframes fadeCross {
+            0% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+            100% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+        }
+
+        /* --- ЭТАП 3: Кроссворд --- */
+        #crossword-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .crossword-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 48px);
+            grid-template-rows: repeat(6, 48px);
+            gap: 5px;
+            background: #d7ccc8;
+            padding: 8px;
+            border-radius: 12px;
+            border: 3px solid #8d6e63;
+        }
+
+        .cw-cell {
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .cw-cell.active-cell {
+            background: #ffffff;
+            border: 2px solid #bcaaa4;
+            color: #37474f;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cw-cell.empty-vowel {
+            background: #fff8e1;
+            border: 3px dashed #ffa726;
+            cursor: pointer;
+            color: #ef6c00;
+        }
+
+        .cw-cell.selected {
+            border: 3px solid #29b6f6 !important;
+            background: #e1f5fe !important;
+            animation: pulseCell 1s infinite alternate;
+        }
+
+        @keyframes pulseCell {
+            0% { transform: scale(0.96); }
+            100% { transform: scale(1.04); }
+        }
+
+        .cw-cell.correct-vowel {
+            background: #c8e6c9 !important;
+            border: 2px solid #66bb6a !important;
+            color: #2e7d32 !important;
+        }
+
+        .cw-cell.shake-cell {
+            animation: returnShake 0.4s ease-in-out;
+            background: #ffcdd2 !important;
+        }
+
+        .vowel-buttons-panel {
+            display: flex;
+            gap: 8px;
+            background: #fff3e0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 2px solid #ffe0b2;
+        }
+
+        .vowel-btn {
+            width: 45px;
+            height: 45px;
+            background: #ffffff;
+            border: 3px solid #ffb74d;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #e65100;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #f57c00;
+            transition: all 0.1s;
+        }
+        .vowel-btn:hover { background: #fff8e1; transform: translateY(-2px); }
+        .vowel-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #f57c00; }
+
+        .stars-bar {
+            font-size: 20px;
+            color: #ffb300;
+            font-weight: bold;
+        }
+
+        /* Персонаж Яша */
+        .char-yasha {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            width: 55px;
+            height: 55px;
+            background: #ffcc80;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            font-weight: bold;
+            border: 3px solid white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            pointer-events: none;
+            z-index: 6;
+        }
+        .yasha-face { position: relative; text-align: center; }
+        .yasha-ear { position: absolute; width: 12px; height: 22px; background: #a1887f; border-radius: 10px; top: -8px; }
+        .ear-l { left: -4px; transform: rotate(-15deg); }
+        .ear-r { right: -4px; transform: rotate(15deg); }
+
+        /* Оверлей обратной связи */
+        .feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.35);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.2s;
+            padding: 10px;
+        }
+        .feedback-overlay.active { display: flex; opacity: 1; }
+        .feedback-popup {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 20px;
+            border: 4px solid;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .feedback-text { font-size: 16px; font-weight: bold; }
+        .feedback-img { max-width: 100%; height: 110px; border-radius: 10px; object-fit: contain; }
+
+        /* Финальный экран */
+        #final-screen h1 { font-size: 28px; color: var(--game-success); margin-bottom: 10px; }
+        #final-screen p { font-size: 17px; margin-bottom: 15px; }
+
+        @media (max-width: 600px) {
+            .stickers-panel { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .sticker { height: 40px; font-size: 18px; }
+            .letter-slot { width: 38px; height: 42px; font-size: 22px; }
+            .picture-box { font-size: 60px; }
+            .btn { padding: 6px 14px; font-size: 13px; }
+            .hero-img { max-width: 110px; }
+            .crossword-grid { grid-template-columns: repeat(6, 38px); grid-template-rows: repeat(6, 38px); }
+            .cw-cell { width: 38px; height: 38px; font-size: 18px; }
+            .vowel-btn { width: 38px; height: 38px; font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <div class="album-binder"></div>
+
+        <!-- Стартовый экран -->
+        <div id="start-screen" class="screen active">
+            <img src="https://sun9-2.userapi.com/s/v1/ig2/M-bF5igfAAEdQ1xeHsDJUQxG-WDI1AnklV6r4ElcH1xsBCrKf4LvjmcmshtM8AvIKgMruzYEp0WFoGExu-m41n0K.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280,1440x1440,2048x2048&from=bu&cs=1280x0" alt="Яша" class="hero-img">
+            <h1>Приключения с Гласными</h1>
+            <p>Привет! Я собачка Яша. Тебя ждут 3 увлекательных задания: укрась слово наклейками, лови падающие гласные и разгадай кроссворд!</p>
+            <button class="btn" onclick="startStage1()">Начать игру</button>
+        </div>
+
+        <!-- Этап 1: Укрась слово -->
+        <div id="stage1-screen" class="screen">
+            <div class="header">
+                <div class="instruction">Этап 1: Укрась слово «ЁЖИКИ» гласными!</div>
+                <div class="score">Баллы: <span id="score-val-1">0</span></div>
+            </div>
+
+            <div id="game-content">
+                <div class="decoration-area">
+                    <div class="picture-box" id="picture-box">🦔</div>
+                    <div class="word-container" id="word-container"></div>
+                </div>
+
+                <div class="stickers-panel" id="stickers-panel"></div>
+
+                <div class="char-yasha">
+                    <div class="yasha-ear ear-l"></div>
+                    <div class="yasha-ear ear-r"></div>
+                    <div class="yasha-face">🐶<br>Яша</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Этап 2: Тетрис-буквы -->
+        <div id="stage2-screen" class="screen">
+            <div class="header">
+                <div class="instruction">Этап 2: Поймай гласные буквы!</div>
+                <div class="score">Время: <span id="timer-val">30</span>s | Очки: <span id="score-val-2">0</span></div>
+            </div>
+
+            <div id="tetris-area">
+                <div class="tetris-column" id="col-0"></div>
+                <div class="tetris-column" id="col-1"></div>
+                <div class="tetris-column" id="col-2"></div>
+            </div>
+
+            <div class="char-yasha">
+                <div class="yasha-ear ear-l"></div>
+                <div class="yasha-ear ear-r"></div>
+                <div class="yasha-face">🐶<br>Яша</div>
+            </div>
+        </div>
+
+        <!-- Этап 3: Кроссворд -->
+        <div id="stage3-screen" class="screen">
+            <div class="header">
+                <div class="instruction">Этап 3: Кроссворд «Первые слова»</div>
+                <div class="stars-bar" id="stars-bar">Звёзды: ⭐ 0 / 6</div>
+            </div>
+
+            <div id="crossword-container">
+                <div class="crossword-grid" id="cw-grid"></div>
+                <div class="instruction" style="font-size: 14px; color: #795548;">Выбери клетку с «?», а затем нужную гласную:</div>
+                <div class="vowel-buttons-panel" id="vowel-buttons-panel"></div>
+            </div>
+
+            <div class="char-yasha">
+                <div class="yasha-ear ear-l"></div>
+                <div class="yasha-ear ear-r"></div>
+                <div class="yasha-face">🐶<br>Яша</div>
+            </div>
+        </div>
+
+        <!-- Попап обратной связи -->
+        <div class="feedback-overlay" id="feedback-overlay">
+            <div class="feedback-popup" id="feedback-popup">
+                <div class="feedback-text" id="feedback-text"></div>
+                <img src="" alt="feedback" class="feedback-img" id="feedback-img">
+                <button class="btn" id="next-btn" style="display:none;" onclick="closeFeedback()">Дальше</button>
+            </div>
+        </div>
+
+        <!-- Финальный экран -->
+        <div id="final-screen" class="screen">
+            <img src="file:///C:/Users/Admin/Downloads/167fbe7de8006e2a273d53df6e5b4d6d_9f7547b7-05e0-4f86-a295-e41a73a370fb.jpg" alt="Победа" class="hero-img">
+            <h1>Все 3 этапа пройдены!</h1>
+            <p id="final-result-text"></p>
+            <div class="score" style="font-size: 22px; margin-bottom: 20px;">Всего баллов: <span id="final-score-val">0</span></div>
+            <button class="btn" onclick="restartGame()">Играть снова</button>
+        </div>
+    </div>
+
+    <script>
+        const LANG = 'ru-RU';
+
+        // Ваши ссылки
+        const IMG_URL_CORRECT = "https://sun9-85.userapi.com/s/v1/ig2/79OjGTOic44hDvWO2QzVTySu-QYbE6p58GcHr-8AhnIu1Lo1APel0HGP2cqJU9XAMswgSb_BG7GVcnpBT-9HavoG.jpg?quality=95&as=32x18,48x27,72x40,108x60,160x89,240x134,360x201,480x268,540x301,640x357,720x402,1080x603,1280x714,1376x768&from=bu&cs=1280x0";
+        const IMG_URL_WRONG = "https://sun9-5.userapi.com/s/v1/ig2/-5th8y_UXjwlnWus9CQPO6T1jMhlDjYn_fbd0sPDFB6AurWcumLsWoT-m5W2FSzSoYstpbTT6kunuQh41oMC9Inc.jpg?quality=95&as=32x18,48x27,72x40,108x60,160x89,240x134,360x201,480x268,540x301,640x357,720x402,1080x603,1280x714,1376x768&from=bu&u=KN59DOQOICFHtjRx1pzikNR6K6uTn2JKaa2hkXwy-F8&cs=540x0";
+
+        // Данные ЭТАПА 1
+        const WORD_DATA = {
+            targetWord: "ЁЖИКИ",
+            letters: [
+                { char: 'Ё', isVowel: true, filled: false },
+                { char: 'Ж', isVowel: false, filled: true },
+                { char: 'И', isVowel: true, filled: false },
+                { char: 'К', isVowel: false, filled: true },
+                { char: 'И', isVowel: true, filled: false }
+            ]
+        };
+
+        const STICKERS_POOL = [
+            { char: 'Ё', isVowel: true }, { char: 'И', isVowel: true }, { char: 'И', isVowel: true },
+            { char: 'А', isVowel: true }, { char: 'О', isVowel: true }, { char: 'У', isVowel: true },
+            { char: 'Б', isVowel: false }, { char: 'В', isVowel: false }, { char: 'Г', isVowel: false },
+            { char: 'Д', isVowel: false }, { char: 'К', isVowel: false }, { char: 'М', isVowel: false }
+        ];
+
+        // Данные ЭТАПА 2
+        const VOWELS = ['А', 'О', 'У', 'Ы', 'Э', 'Е', 'Ё', 'И', 'Ю', 'Я'];
+        const CONSONANTS = ['Б', 'В', 'Г', 'Д', 'Ж', 'З', 'К', 'Л', 'М', 'Н', 'П', 'Р', 'С', 'Т'];
+
+        // Данные ЭТАПА 3 (Кроссворд 6x6)
+        // Слова: КОТ, ДОМ, ЛЕС, РАК, СЫР, МИР
+        const CROSSWORD_GRID = [
+            [ {char:'К',vowel:false}, {char:'О',vowel:true,key:true}, {char:'Т',vowel:false}, null, null, null ],
+            [ null,                   {char:'Д',vowel:false},          null,            null, null, null ],
+            [ {char:'Л',vowel:false}, {char:'О',vowel:true,key:true}, {char:'М',vowel:false}, null, null, null ],
+            [ null,                   {char:'Е',vowel:true,key:true}, {char:'С',vowel:false}, null, null, null ],
+            [ {char:'Р',vowel:false}, {char:'А',vowel:true,key:true}, {char:'К',vowel:false}, null, null, null ],
+            [ {char:'С',vowel:false}, {char:'Ы',vowel:true,key:true}, {char:'Р',vowel:false}, {char:'М',vowel:false}, {char:'И',vowel:true,key:true}, {char:'Р',vowel:false} ]
+        ];
+
+        // Посегментные слова для проверки звёздочек
+        const WORDS_LIST = [
+            { id: 1, name: "КОТ", cells: [{r:0,c:0},{r:0,c:1},{r:0,c:2}], keyCell: {r:0,c:1}, val:'О' },
+            { id: 2, name: "ДОМ", cells: [{r:1,c:1},{r:2,c:1},{r:2,c:2}], keyCell: {r:2,c:1}, val:'О' },
+            { id: 3, name: "ЛЕС", cells: [{r:2,c:0},{r:3,c:1},{r:3,c:2}], keyCell: {r:3,c:1}, val:'Е' },
+            { id: 4, name: "РАК", cells: [{r:4,c:0},{r:4,c:1},{r:4,c:2}], keyCell: {r:4,c:1}, val:'А' },
+            { id: 5, name: "СЫР", cells: [{r:5,c:0},{r:5,c:1},{r:5,c:2}], keyCell: {r:5,c:1}, val:'Ы' },
+            { id: 6, name: "МИР", cells: [{r:5,c:3},{r:5,c:4},{r:5,c:5}], keyCell: {r:5,c:4}, val:'И' }
+        ];
+
+        let gameState = {
+            score: 0,
+            vowelsPlacedStage1: 0,
+            speechSynth: window.speechSynthesis,
+            currentVoice: null,
+            errorTimeout: null,
+            // Тетрис
+            tetrisTime: 30,
+            tetrisTimerInterval: null,
+            tetrisSpawnInterval: null,
+            vowelsCaught: 0,
+            lettersQueue: [],
+            // Кроссворд
+            selectedCwCell: null,
+            completedWordsCount: 0,
+            cwSolvedKeys: {}
+        };
+
+        function loadVoices() {
+            if (!gameState.speechSynth) return;
+            let voices = gameState.speechSynth.getVoices();
+            gameState.currentVoice = voices.find(v => v.lang === LANG && v.name.includes('Google')) || voices.find(v => v.lang === LANG) || voices[0];
+        }
+
+        if ('speechSynthesis' in window) {
+            cancelAudio();
+            loadVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+        }
+
+        function speak(text) {
+            if (!gameState.speechSynth) return;
+            gameState.speechSynth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (gameState.currentVoice) utterance.voice = gameState.currentVoice;
+            utterance.rate = 0.95;
+            utterance.pitch = 1.1;
+            gameState.speechSynth.speak(utterance);
+        }
+
+        function cancelAudio() {
+            if (gameState.speechSynth) gameState.speechSynth.cancel();
+        }
+
+        const getEl = (id) => document.getElementById(id);
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            getEl(screenId).classList.add('active');
+            cancelAudio();
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- ЭТАП 1: Наклейки ---
+        function startStage1() {
+            gameState.score = 0;
+            gameState.vowelsPlacedStage1 = 0;
+            getEl('score-val-1').textContent = gameState.score;
+            getEl('picture-box').classList.remove('alive');
+            
+            WORD_DATA.letters[0].filled = false;
+            WORD_DATA.letters[2].filled = false;
+            WORD_DATA.letters[4].filled = false;
+
+            renderWord();
+            renderStickers();
+            showScreen('stage1-screen');
+            
+            // Исправленная озвучка первого этапа
+            setTimeout(() => {
+                speak("Этап первый. Выбери из наклеек только гласные буквы и укрась ими слово Ёжики!");
+            }, 400);
+        }
+
+        function renderWord() {
+            const container = getEl('word-container');
+            container.innerHTML = '';
+            WORD_DATA.letters.forEach((item) => {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                if (!item.isVowel) {
+                    slot.classList.add('filled-consonant');
+                    slot.textContent = item.char;
+                } else {
+                    if (item.filled) {
+                        slot.classList.add('filled-vowel');
+                        slot.textContent = item.char;
+                    } else {
+                        slot.classList.add('empty-vowel');
+                        slot.textContent = '_';
+                    }
+                }
+                container.appendChild(slot);
+            });
+        }
+
+        function renderStickers() {
+            const panel = getEl('stickers-panel');
+            panel.innerHTML = '';
+            const shuffledStickers = shuffle([...STICKERS_POOL]);
+
+            shuffledStickers.forEach((st) => {
+                const sticker = document.createElement('div');
+                sticker.className = 'sticker';
+                sticker.textContent = st.char;
+                sticker.onclick = () => handleStickerClick(sticker, st);
+                panel.appendChild(sticker);
+            });
+        }
+
+        function handleStickerClick(stickerEl, stData) {
+            if (stickerEl.classList.contains('used') || document.querySelector('.feedback-overlay.active')) return;
+
+            // Чёткая проверка: гласная или согласная
+            if (stData.isVowel) {
+                const emptySlotIndex = WORD_DATA.letters.findIndex(l => l.isVowel && !l.filled);
+                if (emptySlotIndex !== -1) {
+                    WORD_DATA.letters[emptySlotIndex].filled = true;
+                    WORD_DATA.letters[emptySlotIndex].char = stData.char;
+                    stickerEl.classList.add('used');
+
+                    gameState.vowelsPlacedStage1++;
+                    gameState.score += 20;
+                    getEl('score-val-1').textContent = gameState.score;
+                    renderWord();
+
+                    const text = `Отлично! Наклейка с гласной «${stData.char}» на месте!`;
+                    speak(text);
+                    showFeedback(true, text);
+
+                    if (gameState.vowelsPlacedStage1 >= 3) {
+                        setTimeout(prepareStage2, 1200);
+                    }
+                }
+            } else {
+                // Если нажата СОГЛАСНАЯ
+                stickerEl.classList.add('shake-error');
+                setTimeout(() => stickerEl.classList.remove('shake-error'), 500);
+                const msg = "Это согласная буква! Выбери гласную для украшения слова.";
+                speak(msg);
+                showFeedback(false, msg);
+            }
+        }
+
+        function prepareStage2() {
+            closeFeedback();
+            getEl('picture-box').classList.add('alive');
+            speak("Ура! Ёжики ожили! Переходим ко второму этапу!");
+            setTimeout(startStage2, 2200);
+        }
+
+        // --- ЭТАП 2: Тетрис ---
+        function startStage2() {
+            showScreen('stage2-screen');
+            gameState.tetrisTime = 30;
+            gameState.vowelsCaught = 0;
+            getEl('timer-val').textContent = gameState.tetrisTime;
+            getEl('score-val-2').textContent = gameState.score;
+
+            for (let i = 0; i < 3; i++) getEl('col-' + i).innerHTML = '';
+
+            let vowelsList = shuffle([...VOWELS]).slice(0, 8).map(c => ({ char: c, isVowel: true }));
+            let consList = shuffle([...CONSONANTS]).slice(0, 7).map(c => ({ char: c, isVowel: false }));
+            gameState.lettersQueue = shuffle([...vowelsList, ...consList]);
+
+            speak("Этап второй: Тетрис! Лови сверху только гласные буквы, пока они не упали!");
+
+            gameState.tetrisTimerInterval = setInterval(() => {
+                gameState.tetrisTime--;
+                getEl('timer-val').textContent = gameState.tetrisTime;
+                if (gameState.tetrisTime <= 0) {
+                    endStage2();
+                }
+            }, 1000);
+
+            let spawnDelay = 1800;
+            function scheduleSpawn() {
+                if (gameState.lettersQueue.length > 0 && gameState.tetrisTime > 0) {
+                    spawnFallingLetter();
+                    spawnDelay = Math.max(900, spawnDelay - 60);
+                    gameState.tetrisSpawnInterval = setTimeout(scheduleSpawn, spawnDelay);
+                }
+            }
+            gameState.tetrisSpawnInterval = setTimeout(scheduleSpawn, 1000);
+        }
+
+        function spawnFallingLetter() {
+            if (gameState.lettersQueue.length === 0) return;
+            const letterData = gameState.lettersQueue.pop();
+            const colIdx = Math.floor(Math.random() * 3);
+            const columnEl = getEl('col-' + colIdx);
+
+            const letterEl = document.createElement('div');
+            letterEl.className = 'falling-letter';
+            letterEl.textContent = letterData.char;
+            columnEl.appendChild(letterEl);
+
+            let posY = -60;
+            const speed = 2.0 + (30 - gameState.tetrisTime) * 0.08;
+
+            function animate() {
+                if (!letterEl.parentElement) return;
+                posY += speed;
+                letterEl.style.top = posY + 'px';
+
+                if (posY > columnEl.clientHeight - 60) {
+                    if (letterData.isVowel) {
+                        showCrossMark(columnEl, posY);
+                    }
+                    letterEl.remove();
+                } else {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            letterEl.onclick = () => {
+                if (letterData.isVowel) {
+                    gameState.vowelsCaught++;
+                    gameState.score += 15;
+                    getEl('score-val-2').textContent = gameState.score;
+                    letterEl.style.scale = '1.3';
+                    letterEl.style.opacity = '0';
+                    setTimeout(() => letterEl.remove(), 150);
+                } else {
+                    showCrossMark(columnEl, posY);
+                    letterEl.remove();
+                }
+            };
+
+            requestAnimationFrame(animate);
+        }
+
+        function showCrossMark(parentEl, posY) {
+            const cross = document.createElement('div');
+            cross.className = 'cross-mark';
+            cross.textContent = '❌';
+            cross.style.top = posY + 'px';
+            parentEl.appendChild(cross);
+            setTimeout(() => cross.remove(), 800);
+        }
+
+        function endStage2() {
+            clearInterval(gameState.tetrisTimerInterval);
+            clearTimeout(gameState.tetrisSpawnInterval);
+
+            const msg = `Отлично! На этапе Тетрис ты поймал ${gameState.vowelsCaught} из 8 гласных! Переходим к кроссворду!`;
+            speak(msg);
+            setTimeout(startStage3, 3000);
+        }
+
+        // --- ЭТАП 3: Кроссворд ---
+        function startStage3() {
+            showScreen('stage3-screen');
+            gameState.completedWordsCount = 0;
+            gameState.cwSolvedKeys = {};
+            gameState.selectedCwCell = null;
+            updateStarsDisplay();
+
+            renderCrosswordGrid();
+            renderVowelButtons();
+
+            speak("Этап третий: Кроссворд Первые слова! Нажимай на клетки с вопросиком и вставляй пропущенные гласные!");
+        }
+
+        function renderCrosswordGrid() {
+            const gridEl = getEl('cw-grid');
+            gridEl.innerHTML = '';
+
+            for (let r = 0; r < 6; r++) {
+                for (let c = 0; c < 6; c++) {
+                    const cellData = CROSSWORD_GRID[r][c];
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'cw-cell';
+                    cellDiv.dataset.row = r;
+                    cellDiv.dataset.col = c;
+
+                    if (cellData) {
+                        cellDiv.classList.add('active-cell');
+                        if (cellData.vowel && cellData.key) {
+                            cellDiv.classList.add('empty-vowel');
+                            cellDiv.textContent = '?';
+                            cellDiv.onclick = () => selectCwCell(cellDiv, r, c);
+                        } else {
+                            cellDiv.textContent = cellData.char;
+                        }
+                    }
+                    gridEl.appendChild(cellDiv);
+                }
+            }
+        }
+
+        function renderVowelButtons() {
+            const panel = getEl('vowel-buttons-panel');
+            panel.innerHTML = '';
+            const keyVowels = ['А', 'О', 'Е', 'И', 'Ы', 'У'];
+            
+            keyVowels.forEach(v => {
+                const btn = document.createElement('button');
+                btn.className = 'vowel-btn';
+                btn.textContent = v;
+                btn.onclick = () => handleVowelInput(v);
+                panel.appendChild(btn);
+            });
+        }
+
+        function selectCwCell(cellEl, r, c) {
+            if (cellEl.classList.contains('correct-vowel')) return;
+            document.querySelectorAll('.cw-cell').forEach(el => el.classList.remove('selected'));
+            cellEl.classList.add('selected');
+            gameState.selectedCwCell = { el: cellEl, row: r, col: c };
+        }
+
+        function handleVowelInput(vowelChar) {
+            if (!gameState.selectedCwCell) {
+                speak("Сначала выбери клетку с вопросиком в кроссворде!");
+                return;
+            }
+
+            const { el, row, col } = gameState.selectedCwCell;
+            const targetCellData = CROSSWORD_GRID[row][col];
+
+            if (targetCellData.char === vowelChar) {
+                // Верная буква
+                el.classList.remove('empty-vowel', 'selected');
+                el.classList.add('correct-vowel');
+                el.textContent = vowelChar;
+                gameState.cwSolvedKeys[`${row}_${col}`] = true;
+                gameState.selectedCwCell = null;
+
+                gameState.score += 25;
+                speak(`Правильно! Буква ${vowelChar}!`);
+
+                checkCompletedWords();
+            } else {
+                // Ошибка
+                el.classList.add('shake-cell');
+                setTimeout(() => el.classList.remove('shake-cell'), 400);
+                speak(`Попробуй другую гласную! Буква ${vowelChar} сюда не подходит.`);
+            }
+        }
+
+        function checkCompletedWords() {
+            WORDS_LIST.forEach(w => {
+                if (!w.solved) {
+                    const keyPos = `${w.keyCell.r}_${w.keyCell.c}`;
+                    if (gameState.cwSolvedKeys[keyPos]) {
+                        w.solved = true;
+                        gameState.completedWordsCount++;
+                        updateStarsDisplay();
+                    }
+                }
+            });
+
+            if (gameState.completedWordsCount >= 6) {
+                setTimeout(endGame, 1500);
+            }
+        }
+
+        function updateStarsDisplay() {
+            getEl('stars-bar').textContent = `Звёзды: ⭐ ${gameState.completedWordsCount} / 6`;
+        }
+
+        function endGame() {
+            const finalMsg = `Ура! Ты успешно разгадал весь кроссворд и собрал все 6 звёзд!`;
+            getEl('final-result-text').textContent = finalMsg;
+            getEl('final-score-val').textContent = gameState.score;
+
+            showScreen('final-screen');
+            speak(`${finalMsg} Ты большой молодец!`);
+        }
+
+        function showFeedback(isCorrect, text) {
+            const overlay = getEl('feedback-overlay');
+            const popup = getEl('feedback-popup');
+            const textEl = getEl('feedback-text');
+            const imgEl = getEl('feedback-img');
+            const nextBtn = getEl('next-btn');
+
+            textEl.textContent = text;
+            if (gameState.errorTimeout) clearTimeout(gameState.errorTimeout);
+
+            if (isCorrect) {
+                popup.style.borderColor = 'var(--game-success)';
+                textEl.style.color = 'var(--game-success)';
+                imgEl.src = IMG_URL_CORRECT;
+                nextBtn.style.display = 'inline-block';
+            } else {
+                popup.style.borderColor = 'var(--game-error)';
+                textEl.style.color = 'var(--game-error)';
+                imgEl.src = IMG_URL_WRONG;
+                nextBtn.style.display = 'none';
+                gameState.errorTimeout = setTimeout(closeFeedback, 2200);
+            }
+            overlay.classList.add('active');
+        }
+
+        function closeFeedback() {
+            getEl('feedback-overlay').classList.remove('active');
+            cancelAudio();
+        }
+
+        function restartGame() {
+            showScreen('start-screen');
+        }
+    </script>
+</body>
+</html>
